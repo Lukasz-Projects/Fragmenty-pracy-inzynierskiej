@@ -1,0 +1,27 @@
+<!--
+  ~ Author: Łukasz Słodownik.
+  ~ Integral part of the bachelor thesis "Analiza i prezentacja danych pomiarowych z systemu motion capture".
+  ~ Supervisor of the bachelor thesis: Ph.D.Michał Ludwicki, Lodz University of Technology.
+  ~ Copyright © 2020 Łukasz Słodownik.
+  -->
+
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Łukasz Słodownik">
+    <title>Apmc008</title>
+</head>
+<body>
+<h1>Apmc008</h1>
+<h2>Praca inżynierska</h2>
+<p>Program Apmc008 będący częścią pracy inżynierskiej na temat "Analiza i prezentacja danych pomiarowych z systemu motion capture"<br>
+<a href="choose_source.html">Wczytywanie danych. Wybierz źródło danych.</a><br>
+    <span th:if="${markerListPopulated}"><a href="/plotlyAnkleHeightGL.html">Obejrzyj wykresy</a>
+        <br>
+    <a href="/textResults.html">Zobacz parametry w formie tekstowej</a>
+    <br></span>
+<a href="about.html">O programie</a>
+</p>
+</body>
+</html>

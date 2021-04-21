@@ -1,0 +1,103 @@
+<!--
+  ~ Author: Łukasz Słodownik.
+  ~ Integral part of the bachelor thesis "Analiza i prezentacja danych pomiarowych z systemu motion capture".
+  ~ Supervisor of the bachelor thesis: Ph.D.Michał Ludwicki, Lodz University of Technology.
+  ~ Copyright © 2020 Łukasz Słodownik.
+  -->
+
+
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Łukasz Słodownik">
+    <title>Tekstowe rezultaty analizy</title>
+</head>
+<body>
+
+<table>
+    <tr>
+        <th>Informacja o analizowanym fragmencie</th>
+    </tr>
+    <tr>
+        <td>Czas początkowy</td>
+        <td><span th:text="${#numbers.formatDecimal(startTime, 1, 'COMMA', 3, 'POINT')}">0.000</span></td>
+    </tr>
+    <tr>
+        <td>Czas końcowy</td>
+        <td><span th:text="${#numbers.formatDecimal(endTime, 1, 'COMMA', 3, 'POINT')}">0.000</span></td>
+    </tr>
+    <tr>
+        <td>Liczba wykrytych kroków</td>
+        <td th:text="${numberOfStrides}">0</td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <th>Nazwa parametru chodu</th>
+        <th>Wartość</th>
+        <th>Jednostka</th>
+    </tr>
+    <tr>
+        <td>Średnia długość kroku</td>
+        <td><span th:text="${#numbers.formatDecimal(averageStrideLength, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+        <td>m</td>
+    </tr>
+    <tr>
+        <td>Rytm - norma (60-132)</td>
+        <td><span th:text="${#numbers.formatDecimal(cadence, 1, 'COMMA', 1, 'POINT')}">0.0</span></td>
+        <td>wykroków na minutę</td>
+    </tr>
+    <tr>
+        <td>Czas cyklu</td>
+        <td><span th:text="${#numbers.formatDecimal(strideDuration, 1, 'COMMA', 3, 'POINT')}">0.000</span></td>
+        <td>s</td>
+    </tr>
+    <tr>
+        <td>Średnia długość lewego wykroku</td>
+        <td><span th:text="${#numbers.formatDecimal(avgLeftSideStepLength, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+        <td>m</td>
+    </tr>
+    <tr>
+        <td>Średnia długość prawego wykroku</td>
+        <td><span th:text="${#numbers.formatDecimal(avgRightSideStepLength, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+        <td>m</td>
+    </tr>
+    <tr>
+        <td>Indeks symetrii dla długości wykroków</td>
+        <td><span th:text="${#numbers.formatDecimal(stepLengthSI, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+        <td>%</td>
+    </tr>
+    <tr>
+        <td>Średni czas lewego wykroku</td>
+        <td><span th:text="${#numbers.formatDecimal(avgLeftSideStepTime, 1, 'COMMA', 3, 'POINT')}">0.00</span></td>
+        <td>s</td>
+    </tr>
+    <tr>
+        <td>Średni czas prawego wykroku</td>
+        <td><span th:text="${#numbers.formatDecimal(avgRightSideStepTime, 1, 'COMMA', 3, 'POINT')}">0.00</span></td>
+        <td>s</td>
+    </tr>
+    <tr>
+        <td>Indeks symetrii dla czasu wykroków</td>
+        <td><span th:text="${#numbers.formatDecimal(stepTimeSI, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+        <td>%</td>
+    </tr>
+    <tr>
+        <td>Średna szybkość liczona pośrednio</td>
+        <td><span th:text="${#numbers.formatDecimal(avgVelocity, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+        <td>m/s</td>
+    </tr>
+</table>
+<form action="/textResults.html">
+    <label for="startTime">Wprowadź czas początkowy:</label>
+    <input type="text" name="startTime" id="startTime" th:value="${startTime}">
+    <label for="endTime">Wprowadź czas końcowy:</label>
+    <input type="text" name="endTime" id="endTime" th:value="${endTime}">
+    <input type="submit" value="Zobacz resultaty analizy dla podanego zakresu czasu">
+</form>
+<br>
+<a href="/plotlyAnkleHeightGL.html">Obejrzyj wykresy</a><br>
+<a href="index.html">Powrót do strony głównej</a>
+</body>
+</html>

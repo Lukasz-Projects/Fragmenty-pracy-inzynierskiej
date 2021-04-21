@@ -1,0 +1,47 @@
+<!--
+  ~ Author: Łukasz Słodownik.
+  ~ Integral part of the bachelor thesis "Analiza i prezentacja danych pomiarowych z systemu motion capture".
+  ~ Supervisor of the bachelor thesis: Ph.D.Michał Ludwicki, Lodz University of Technology.
+  ~ Copyright © 2020 Łukasz Słodownik.
+  -->
+
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Łukasz Słodownik">
+    <title>Pomyślnie załadowano dane</title>
+</head>
+<body>
+<p>Pomyślnie załadowano dane z pliku CSV!</p>
+<p><a href="/plotlyAnkleHeightGL.html">Obejrzyj wykresy</a>
+    <br>
+    <a href="/textResults.html">Zobacz parametry w formie tekstowej</a>
+    <br>
+
+</p>
+<p>Nazwy markerów na stawie skokowym:
+<table><tr>
+    <th>Nazw markerów stawów skokowych</th>
+</tr>
+    <tr th:each="markerName : ${ankleMarkerNames}">
+        <td th:text="${markerName}">Marker name</td>
+    </tr>
+</table>
+</p>
+<p>List of all loaded markers:
+<table>
+    <tr>
+        <th>Marker name</th>
+        <th>Marker ID</th>
+    </tr>
+    <tr th:each="nameAndIDArray : ${markerNamesAndIDs}">
+        <td th:text="${nameAndIDArray[0]}">Marker name</td>
+        <td th:text="${nameAndIDArray[1]}">Marker ID</td>
+    </tr>
+</table>
+</p>
+<br>
+<a href="index.html">Powrót do strony głównej</a>
+</body>
+</html>

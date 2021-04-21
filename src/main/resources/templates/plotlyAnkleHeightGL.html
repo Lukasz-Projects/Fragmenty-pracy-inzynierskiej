@@ -1,0 +1,230 @@
+<!--
+  ~ Author: Łukasz Słodownik.
+  ~ Integral part of the bachelor thesis "Analiza i prezentacja danych pomiarowych z systemu motion capture".
+  ~ Supervisor of the bachelor thesis: Ph.D.Michał Ludwicki, Lodz University of Technology.
+  ~ Copyright © 2020 Łukasz Słodownik.
+  -->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Łukasz Słodownik">
+    <title>Wykresy dotyczące stawu skokowego - plotly.js WebGL</title>
+    <script src="/plotly-1.54.5.min.js"></script>
+    <!--    <script src="https://cdn.plot.ly/plotly-1.54.5.min.js"></script>-->
+</head>
+<body>
+<div id="myChart" style="width:1340px;height:748px;"></div>
+<div>
+    <div>
+        <label for="startTime">Wprowadź czas początkowy:</label>
+        <input type="text" name="startTime" id="startTime" value="20">
+        <label for="endTime">Wprowadź czas końcowy:</label>
+        <input type="text" name="endTime" id="endTime" value="40">
+<!--        <input type="button" onclick="msg()" value="Aktualizuj czasy">-->
+    </div>
+    <br />
+</div>
+<input type="button" onclick="refetchData()" value="Przeładuj dane wykresu">
+<br>
+<input type="button" onclick="ankleTraceOnPlot(0)" value="Dane lewego st. skok. w osi pionowej">
+<input type="button" onclick="ankleTraceOnPlot(8)" value="Dane lewego st. skok. w osi poprzecznej">
+<input type="button" onclick="ankleTraceOnPlot(9)" value="Dane lewego st. skok. w osi strzałkowej">
+<br>
+<input type="button" onclick="ankleTraceOnPlot(10)" value="Dane prawego st. skok. w osi pionowej">
+<input type="button" onclick="ankleTraceOnPlot(11)" value="Dane prawego st. skok. w osi poprzecznej">
+<input type="button" onclick="ankleTraceOnPlot(12)" value="Dane prawego st. skok. w osi strzałkowej">
+<!--<br>
+<input type="button" onclick="add1PhaseTrace()" value="Add 1 phase trace">
+<input type="button" onclick="addTimeDerivative()" value="Add time derivative">
+<input type="button" onclick="addFindMinima()" value="Add find minima markers">
+<input type="button" onclick="addTraceToPlot(5);" value="Add local minima markers">
+<input type="button" onclick="addTraceToPlot(6);" value="Add dummy linear regions markers">
+&lt;!&ndash;<button type="button" onclick="addTraceToPlot(7);">(Slow) Add ChackLengthOfLinearRegion markers</button>&ndash;&gt;
+<input type="button" onclick="deleteTraces()" value="Delete added traces">-->
+<script>
+    const urls = [
+        "plotly/ankle/left/data?axis=y&traceMode=lines+markers&traceType=scattergl",
+        "plotly/ankle/left/avg?axis=y&traceType=scattergl",
+        "plotly/gait/phase/1/ankle/left",
+        "plotly/gait/phase/3/timeDerivative/ankle/left",
+        "plotly/gait/phase/3/findExtremaInRanges/ankle/left",
+        "plotly/gait/phase/3/localMinima/ankle/left",
+        "plotly/gait/phase/4/linearRegionsAM/ankle/left",
+        "plotly/gait/phase/4/lengthOfLinearRegion", //slow - better don't use it
+        "plotly/ankle/left/data?axis=x&traceMode=lines+markers&traceType=scattergl",
+        "plotly/ankle/left/data?axis=z&traceMode=lines+markers&traceType=scattergl",
+        "plotly/ankle/right/data?axis=y&traceMode=lines+markers&traceType=scattergl",
+        "plotly/ankle/right/data?axis=x&traceMode=lines+markers&traceType=scattergl",
+        "plotly/ankle/right/data?axis=z&traceMode=lines+markers&traceType=scattergl",
+    ];
+
+    const loadedUrls = [];
+    const dataToUrlNumber = [];
+    for(var i = 0; i < urls.length; i++) {
+        loadedUrls.push(false);
+    }
+
+    const data = JSON.parse('[]');
+    const CHART = document.getElementById('myChart');
+    const layout = {mode: 'markers',title: {
+            text:'Wykresy dotyczące stawu skokowego - plotly.js scattergl (WebGL)',
+            font: {
+                family: 'Courier New, monospace',
+                size: 18
+            },
+        }};
+    chartPoints();
+
+    async function chartPoints() {
+        let startTime = document.getElementById("startTime").value;
+        let endTime = document.getElementById("endTime").value;
+        let url0 = addTimeParametersToUrl(urls[0],startTime,endTime);
+        loadedUrls[0] = true;
+        let url1 = addTimeParametersToUrl(urls[1],startTime,endTime);
+        loadedUrls[1] = true;
+        await Plotly.d3.json(url0, function (error0, trace0) {
+            if (error0) return console.warn(error0);
+            data[0] = trace0;
+            dataToUrlNumber[0] = 0;
+            Plotly.d3.json(url1, function (error1, trace1) {
+                if (error1) return console.warn(error1);
+                data[1] = trace1;
+                dataToUrlNumber[1] = 1;
+                Plotly.newPlot(CHART, data, layout);
+            })
+        });
+    }
+
+    async function ankleTraceOnPlot(num) {
+        // Plotly.react(CHART,JSON.parse('[]'),layout);
+        let startTime = document.getElementById("startTime").value;
+        let endTime = document.getElementById("endTime").value;
+        let url = addTimeParametersToUrl(urls[num],startTime,endTime);
+        loadedUrls[num] = !loadedUrls[num];
+        if (loadedUrls[num]) {
+            let dataLen = data.length;
+            data[dataLen] = await fetchDataPointsInJSON(url);
+            dataToUrlNumber[dataLen] = num;
+        } else {
+            let length = dataToUrlNumber.length;
+            for(var i = 0; i < length; i++) {
+                if (dataToUrlNumber[i] === num){
+                    let tmpData = await data.filter(function (value, index) {
+                        return index !== i;
+                    });
+                    let tmpDataToUrlNumber = await dataToUrlNumber.filter(function (value, index) {
+                        return index !== i;
+                    });
+                    data.length = 0;
+                    dataToUrlNumber.length = 0;
+                    for (var k = 0; k < tmpData.length; k++) {
+                        await data.push(tmpData[k]);
+                        await dataToUrlNumber.push(tmpDataToUrlNumber[k]);
+                    }
+                    break;
+                }
+            }
+        }
+        await Plotly.react(CHART,data,layout);
+    }
+
+    async function addTraceToPlot(num) {
+        let startTime = document.getElementById("startTime").value;
+        let endTime = document.getElementById("endTime").value;
+        let url = addTimeParametersToUrl(urls[num],startTime,endTime);
+        data[data.length] = await fetchDataPointsInJSON(url);
+        Plotly.react(CHART,data,layout);
+    }
+
+    async function addFindMinima(){
+        await addTraceToPlot(4);
+    }
+
+    async function addTimeDerivative() {
+        let startTime = document.getElementById("startTime").value;
+        let endTime = document.getElementById("endTime").value;
+        let url = addTimeParametersToUrl(urls[3],startTime,endTime);
+        data[data.length] = await fetchDataPointsInJSON(url);
+        Plotly.react(CHART,data,layout);
+    }
+
+    async function addTrace(){
+        // data[1]['y'] = [0.19,0.19];
+        const tmpTrace = {"mode":"lines","x":[20,200],"y":[0.13,0.13],"type":"scattergl"};
+        data[data.length] = tmpTrace;
+        console.log('addTrace()');
+        Plotly.react(CHART,data,layout);
+    }
+
+    async function add1PhaseTrace(){
+        let startTime = document.getElementById("startTime").value;
+        let endTime = document.getElementById("endTime").value;
+        let url = addTimeParametersToUrl(urls[2],startTime,endTime);
+        data[data.length] = await fetchDataPointsInJSON(url);
+        Plotly.react(CHART,data,layout);
+    }
+
+    // async function changeTrace(){
+    //     console.log('changeTrace()');
+    //     const updatedTrace = {
+    //         x: [ [20,    200] ],
+    //         y: [ [0.12, 0.12] ]
+    //     };
+    //     Plotly.restyle(CHART,updatedTrace,1)
+    // }
+
+    async function refetchData() {
+        let startTime = document.getElementById("startTime").value;
+        let endTime = document.getElementById("endTime").value;
+        data.length = 0;
+        // data[0] = await fetchDataPointsInJSON(addTimeParametersToUrl(urls[0],startTime,endTime));
+        // data[1] = await fetchDataPointsInJSON(addTimeParametersToUrl(urls[1],startTime,endTime));
+        for(var i = 0; i < loadedUrls.length; i++) {
+            if (loadedUrls[i]){
+                data[data.length] = await fetchDataPointsInJSON(addTimeParametersToUrl(urls[i],startTime,endTime));
+            }
+        }
+        Plotly.react(CHART,data,layout);
+    }
+
+    async function deleteTraces(){
+        const tmpData = [data[0],data[1]];
+        data.length = 0;
+        data[0] = tmpData[0];
+        data[1] = tmpData[1];
+        Plotly.react(CHART,data,layout);
+    }
+
+    async function fetchDataPointsInJSON(url) {
+        const response = await fetch(url, {
+            headers : {
+                "Content-Type": "application/json"
+            }
+        });
+        return await response.json();
+    }
+
+/*    function urlParamsToLog() {
+        let startTime = document.getElementById("startTime").value;
+        let endTime = document.getElementById("endTime").value;
+        let tmpUrl = addTimeParametersToUrl(urls[0],startTime,endTime);
+        console.log(tmpUrl);
+    }*/
+
+    function addTimeParametersToUrl(url,startTime,endTime) {
+        let tmpUrl;
+        if (url.indexOf("?") < 0) {
+            tmpUrl = url.concat("?startTime=",startTime,"&endTime=",endTime);
+        } else {
+            tmpUrl = url.concat("&startTime=",startTime,"&endTime=",endTime);
+        }
+        return tmpUrl;
+    }
+</script>
+<br>
+<a href="/textResults.html">Zobacz parametry w formie tekstowej</a><br>
+<a href="index.html">Powrót do strony głównej</a>
+</body>
+</html>
